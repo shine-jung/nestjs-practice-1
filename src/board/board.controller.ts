@@ -4,12 +4,18 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
+  ValidationPipe,
 } from '@nestjs/common';
 import { BoardService } from './board.service';
+import { ApiTags } from '@nestjs/swagger';
+import { CreateBoardDto } from './dto/create-board.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Controller('board')
+@ApiTags('Board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
@@ -19,24 +25,27 @@ export class BoardController {
   }
 
   @Get(':id')
-  find(@Param('id') id: number) {
+  find(@Param('id', ParseIntPipe) id: number) {
     console.log(typeof id);
-    return this.boardService.find(+id);
+    return this.boardService.find(id);
   }
 
   @Post()
-  create(@Body() data) {
+  create(@Body(new ValidationPipe()) data: CreateBoardDto) {
     return this.boardService.create(data);
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() data) {
-    return this.boardService.update(+id, data);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ValidationPipe()) data: UpdateBoardDto,
+  ) {
+    return this.boardService.update(id, data);
   }
 
   // Decorator가 있어야 mapping이 됨.
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.boardService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.boardService.remove(id);
   }
 }
