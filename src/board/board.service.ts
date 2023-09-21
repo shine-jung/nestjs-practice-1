@@ -1,68 +1,68 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from 'src/entity/board.entity';
+import { User } from 'src/entity/user.entity';
 
 @Injectable()
 export class BoardService {
-  private boards = [
-    {
-      id: 1,
-      title: 'hello world 1',
-      content: 'Content 1',
-    },
-    {
-      id: 2,
-      title: 'hello world 2',
-      content: 'Content 2',
-    },
-  ];
+  constructor(
+    @InjectRepository(Board)
+    private boardRepository: Repository<Board>,
 
-  findAll() {
-    return this.boards;
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async findAll() {
+    // return this.boardRepository.find();
+    // return this.boardRepository.find({ relations: { user: true } });
+    return this.boardRepository.find({ relations: ['user'] });
   }
 
-  find(id: number) {
-    const index = this.getBoardIndex(id);
-    return this.boards[index];
+  async find(id: number) {
+    // findOne - Finds first entity that matches given where condition.
+    // findOneBy - Finds first entity that matches given id.
+    const board = await this.boardRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    // const board = await this.getBoardById(id);
+
+    if (!board) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+
+    return board;
   }
 
-  create(data: CreateBoardDto) {
-    const newBoard = { id: this.getNextId(), ...data };
-    this.boards.push(newBoard);
-    return newBoard;
+  async create(data: CreateBoardDto) {
+    // 인스턴스 생성
+    const newBoard = this.boardRepository.create(data);
+    // 저장
+    return this.boardRepository.save(newBoard);
   }
 
-  update(id: number, data: UpdateBoardDto) {
-    const index = this.getBoardIndex(id);
+  async update(id: number, data: UpdateBoardDto) {
+    // return await this.boardRepository.update(id, data);
+    const board = await this.getBoardById(id);
 
-    if (index > -1) {
-      this.boards[index] = {
-        ...this.boards[index],
-        ...data, // 덮어씀
-      };
-      return this.boards[index];
-    }
+    if (!board) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 
-    return null;
+    return this.boardRepository.update(id, data);
   }
 
-  remove(id: number) {
-    const index = this.getBoardIndex(id);
+  async remove(id: number) {
+    const board = await this.getBoardById(id);
 
-    if (index > -1) {
-      const deleteBoard = this.boards[index];
-      this.boards.splice(index, 1);
-      return deleteBoard; // 알림
-    }
+    if (!board) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 
-    return null;
+    // remove와 delete의 차이점은 remove는 entity를 받아서 삭제하고 delete는 id를 받아서 삭제한다.
+    // return this.boardRepository.delete(id); // return Promise<DeleteResult>
+    return this.boardRepository.remove(board); // return Promise<Entity>
   }
 
-  getBoardIndex(id: number) {
-    return this.boards.findIndex((board) => board.id === id);
-  }
-
-  getNextId() {
-    return this.boards.sort((a, b) => b.id - a.id)[0].id + 1;
+  async getBoardById(id: number) {
+    return this.boardRepository.findOneBy({ id });
   }
 }

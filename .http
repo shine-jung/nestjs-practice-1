@@ -4,29 +4,33 @@ GET http://localhost:3000/board
 ###
 
 # 게시글 하나 가져오기
-GET http://localhost:3000/board/3
+GET http://localhost:3000/board/1
 
 ###
+
 # 게시글 생성하기
 POST http://localhost:3000/board
 content-type: application/json
 
 {
-    "title": "peter",
-    "content": "hi peter"
+    "userId": 5,
+    "title": "hello",
+    "contents": "hello world"
 }
 
 ###
+
 # 게시글 업데이트하기
-PUT http://localhost:3000/board/3
+PUT http://localhost:3000/board/1
 content-type: application/json
 
 {
-    "title": "john",
-    "content": "hi john"
+    "title": "peter",
+    "contents": "hi peter"
 }
 
 ###
+
 # 게시글 삭제하기
 DELETE http://localhost:3000/board/1
 
