@@ -59,4 +59,16 @@ export class User {
   // (board) => board.user: Board entity에서 user를 사용한다는 의미
   @OneToMany(() => Board, (board) => board.user)
   boards: Board[];
+
+  // Virtual Property
+  // DB에 저장되지 않지만, Entity에서는 사용할 수 있는 속성
+  @ApiProperty({ description: '작성글 수' })
+  @Column({
+    select: false,
+    nullable: true,
+    insert: false,
+    update: false,
+    default: 0,
+  })
+  boardCount?: number;
 }

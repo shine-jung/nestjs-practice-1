@@ -1,10 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BoardModule } from './board/board.module';
+import { BoardModule } from './routes/board/board.module';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import ConfigModule from './config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './routes/user/user.module';
 
 @Module({
   imports: [
@@ -19,10 +20,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       // 빌드 시 js로 변환 후 실행되므로 js 파일도 포함
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       // 작성된 entity와 DB의 스키마를 동기화
-      synchronize: false,
+      synchronize: false, // dev 환경에서 entity 수정 시 자동으로 반영하고 싶으면 true로 변경
       logging: true,
     }),
     BoardModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
