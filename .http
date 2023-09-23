@@ -61,3 +61,12 @@ content-type: application/json
 }
 
 ###
+
+# 유저 로그인
+POST http://localhost:3000/user/login
+content-type: application/json
+
+{
+    "username": "jungseok06",
+    "password": "1234"
+}

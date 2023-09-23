@@ -30,7 +30,8 @@ export class User {
     example: '1234',
   })
   // select: false를 해주면 DB에서는 password를 가져오지 않음.
-  @Column({ select: false })
+  // @Column({ select: false })
+  @Column()
   password: string;
 
   @ApiProperty({

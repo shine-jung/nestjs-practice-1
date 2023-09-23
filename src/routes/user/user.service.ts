@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from 'src/entity/board.entity';
 import { User } from 'src/entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
+import { LoginUserDto } from './dto/login-user.dto';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class UserService {
@@ -26,6 +28,36 @@ export class UserService {
     });
 
     return this.userRepository.save(newUser);
+  }
+
+  async login(data: LoginUserDto) {
+    const { username, password } = data;
+
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+    const isPasswordValid = await compare(password, user.password);
+
+    if (!isPasswordValid)
+      throw new HttpException('Password is invalid', HttpStatus.UNAUTHORIZED);
+
+    // payload - 토큰에 담을 데이터
+    const payload = {
+      username,
+      sub: user.id, // subject
+      name: user.name,
+    };
+
+    const accessToken = jwt.sign(
+      payload,
+      process.env.JWT_SECRET || 'secret_key',
+      { expiresIn: '1d' },
+    );
+
+    return {
+      accessToken,
+    };
   }
 
   async getUsers() {
